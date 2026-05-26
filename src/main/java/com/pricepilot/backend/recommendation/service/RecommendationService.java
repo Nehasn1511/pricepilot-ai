@@ -5,6 +5,7 @@ import com.pricepilot.backend.pricing.dto.SafePriceResponse;
 import com.pricepilot.backend.pricing.service.HealthScoreService;
 import com.pricepilot.backend.pricing.service.PricingEngineService;
 import com.pricepilot.backend.pricing.service.ProfitGuardService;
+import com.pricepilot.backend.recommendation.dto.GenerateRecommendationFromSalesRequest;
 import com.pricepilot.backend.recommendation.dto.GenerateRecommendationRequest;
 import com.pricepilot.backend.recommendation.dto.RecommendationResponse;
 import com.pricepilot.backend.recommendation.entity.Recommendation;
@@ -12,6 +13,8 @@ import com.pricepilot.backend.recommendation.enums.RecommendationStatus;
 import com.pricepilot.backend.recommendation.enums.RecommendationType;
 import com.pricepilot.backend.recommendation.enums.RiskLevel;
 import com.pricepilot.backend.recommendation.repository.RecommendationRepository;
+import com.pricepilot.backend.sales.dto.SalesSummaryResponse;
+import com.pricepilot.backend.sales.service.SalesMetricService;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -25,17 +28,20 @@ public class RecommendationService {
     private final ProfitGuardService profitGuardService;
     private final HealthScoreService healthScoreService;
     private final PricingEngineService pricingEngineService;
+    private final SalesMetricService salesMetricService;
 
     public RecommendationService(
             RecommendationRepository recommendationRepository,
             ProfitGuardService profitGuardService,
             HealthScoreService healthScoreService,
-            PricingEngineService pricingEngineService
+            PricingEngineService pricingEngineService,
+            SalesMetricService salesMetricService
     ) {
         this.recommendationRepository = recommendationRepository;
         this.profitGuardService = profitGuardService;
         this.healthScoreService = healthScoreService;
         this.pricingEngineService = pricingEngineService;
+        this.salesMetricService = salesMetricService;
     }
 
     public RecommendationResponse generateRecommendation(GenerateRecommendationRequest request) {
@@ -99,6 +105,40 @@ public class RecommendationService {
         Recommendation saved = recommendationRepository.save(recommendation);
 
         return mapToResponse(saved);
+    }
+
+    public RecommendationResponse generateRecommendationFromSales(GenerateRecommendationFromSalesRequest request) {
+
+        SalesSummaryResponse salesSummary = salesMetricService.getLast7DaysSummary(
+                request.getTenantId(),
+                request.getMarketplaceProductId()
+        );
+
+        GenerateRecommendationRequest generatedRequest = new GenerateRecommendationRequest();
+
+        generatedRequest.setTenantId(request.getTenantId());
+        generatedRequest.setMasterProductId(request.getMasterProductId());
+        generatedRequest.setMarketplaceProductId(request.getMarketplaceProductId());
+
+        generatedRequest.setCurrentPrice(request.getCurrentPrice());
+        generatedRequest.setCompetitorPrice(request.getCompetitorPrice());
+        generatedRequest.setCostPrice(request.getCostPrice());
+
+        generatedRequest.setMarketplaceCommission(request.getMarketplaceCommission());
+        generatedRequest.setShippingCost(request.getShippingCost());
+        generatedRequest.setPackagingCost(request.getPackagingCost());
+        generatedRequest.setTaxAmount(request.getTaxAmount());
+        generatedRequest.setMinimumProfit(request.getMinimumProfit());
+
+        generatedRequest.setViewsLast7Days(salesSummary.getTotalViews());
+        generatedRequest.setOrdersLast7Days(salesSummary.getTotalOrders());
+        generatedRequest.setReturnsLast7Days(salesSummary.getTotalReturns());
+        generatedRequest.setRating(request.getRating());
+
+        // For now, stock is taken as default because SalesSummaryResponse does not include stock.
+        generatedRequest.setStockQuantity(100);
+
+        return generateRecommendation(generatedRequest);
     }
 
     public List<RecommendationResponse> getRecommendationsByTenant(Long tenantId) {

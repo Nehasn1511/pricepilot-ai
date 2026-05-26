@@ -1,5 +1,6 @@
 package com.pricepilot.backend.recommendation.controller;
 
+import com.pricepilot.backend.recommendation.dto.GenerateRecommendationFromSalesRequest;
 import com.pricepilot.backend.recommendation.dto.GenerateRecommendationRequest;
 import com.pricepilot.backend.recommendation.dto.RecommendationResponse;
 import com.pricepilot.backend.recommendation.service.RecommendationService;
@@ -24,6 +25,13 @@ public class RecommendationController {
             @Valid @RequestBody GenerateRecommendationRequest request
     ) {
         return recommendationService.generateRecommendation(request);
+    }
+
+    @PostMapping("/generate-from-sales")
+    public RecommendationResponse generateRecommendationFromSales(
+            @Valid @RequestBody GenerateRecommendationFromSalesRequest request
+    ) {
+        return recommendationService.generateRecommendationFromSales(request);
     }
 
     @GetMapping
