@@ -23,6 +23,7 @@ public class ProductController {
     private final MasterProductRepository masterProductRepo;
     private final MarketplaceProductRepository marketplaceProductRepo;
     private final TenantRepository tenantRepo;
+    private final PriceChangeLogRepository priceChangeLogRepo;
     private final JwtUtil jwtUtil;
 
     @GetMapping
@@ -131,6 +132,61 @@ public class ProductController {
     public ResponseEntity<List<MarketplaceProduct>> getNoSaleProducts(HttpServletRequest request) {
         Long tenantId = getTenantId(request);
         return ResponseEntity.ok(marketplaceProductRepo.findHighViewNoSaleProducts(tenantId));
+    }
+
+    @GetMapping("/{id}/price-comparison")
+    public ResponseEntity<Map<String, Object>> getPriceComparison(@PathVariable Long id) {
+        return masterProductRepo.findById(id)
+                .map(product -> {
+                    List<MarketplaceProduct> listings = marketplaceProductRepo.findByMasterProductId(id);
+
+                    BigDecimal lowestPrice = listings.stream()
+                            .map(MarketplaceProduct::getCurrentPrice)
+                            .filter(p -> p != null)
+                            .min(Comparator.naturalOrder())
+                            .orElse(BigDecimal.ZERO);
+
+                    BigDecimal highestPrice = listings.stream()
+                            .map(MarketplaceProduct::getCurrentPrice)
+                            .filter(p -> p != null)
+                            .max(Comparator.naturalOrder())
+                            .orElse(BigDecimal.ZERO);
+
+                    List<Map<String, Object>> platformPrices = listings.stream()
+                            .map(l -> {
+                                Map<String, Object> entry = new HashMap<>();
+                                entry.put("platform", l.getPlatform());
+                                entry.put("price", l.getCurrentPrice());
+                                entry.put("stock", l.getStockQuantity());
+                                entry.put("orders7d", l.getOrdersLast7Days());
+                                entry.put("views7d", l.getViewsLast7Days());
+                                return entry;
+                            })
+                            .collect(Collectors.toList());
+
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("productId", id);
+                    result.put("productName", product.getName());
+                    result.put("minimumSafePrice", product.getMinimumSafePrice());
+                    result.put("lowestMarketPrice", lowestPrice);
+                    result.put("highestMarketPrice", highestPrice);
+                    result.put("priceDifference", highestPrice.subtract(lowestPrice));
+                    result.put("platforms", platformPrices);
+                    return ResponseEntity.ok(result);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{id}/price-history")
+    public ResponseEntity<List<PriceChangeLog>> getPriceHistory(@PathVariable Long id) {
+        List<MarketplaceProduct> listings = marketplaceProductRepo.findByMasterProductId(id);
+        List<PriceChangeLog> allLogs = new ArrayList<>();
+        for (MarketplaceProduct listing : listings) {
+            allLogs.addAll(priceChangeLogRepo
+                .findByMarketplaceProductIdOrderByCreatedAtDesc(listing.getId()));
+        }
+        allLogs.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
+        return ResponseEntity.ok(allLogs);
     }
 
     @PostMapping("/import-csv")
