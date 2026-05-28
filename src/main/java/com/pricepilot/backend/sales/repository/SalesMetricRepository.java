@@ -20,5 +20,12 @@ public interface SalesMetricRepository extends JpaRepository<SalesMetric, Long> 
             LocalDate endDate
     );
 
+    List<SalesMetric> findByTenantIdAndMarketplaceProductIdAndMetricDateBetween(
+            Long tenantId,
+            Long marketplaceProductId,
+            LocalDate startDate,
+            LocalDate endDate
+    );
+
     List<SalesMetric> findByTenantId(Long tenantId);
 }
