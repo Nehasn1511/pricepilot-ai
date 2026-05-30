@@ -1,7 +1,9 @@
 package com.pricepilot.backend.analytics.controller;
 
 import com.pricepilot.backend.analytics.dto.BeforeAfterPerformanceResponse;
+import com.pricepilot.backend.analytics.dto.RecommendationAnalyticsStatsResponse;
 import com.pricepilot.backend.analytics.service.RecommendationAnalyticsService;
+
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,6 +17,13 @@ public class RecommendationAnalyticsController {
             RecommendationAnalyticsService recommendationAnalyticsService
     ) {
         this.recommendationAnalyticsService = recommendationAnalyticsService;
+    }
+
+    @GetMapping("/recommendations/stats")
+    public RecommendationAnalyticsStatsResponse getRecommendationStats(
+            @RequestParam Long tenantId
+    ) {
+        return recommendationAnalyticsService.getRecommendationStats(tenantId);
     }
 
     @GetMapping("/recommendations/{recommendationId}/performance")

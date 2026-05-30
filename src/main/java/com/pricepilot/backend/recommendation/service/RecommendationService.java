@@ -1,5 +1,6 @@
 package com.pricepilot.backend.recommendation.service;
 
+import com.pricepilot.backend.ai.service.GeminiExplanationService;
 import com.pricepilot.backend.pricing.dto.HealthScoreResponse;
 import com.pricepilot.backend.pricing.dto.SafePriceResponse;
 import com.pricepilot.backend.pricing.service.HealthScoreService;
@@ -29,19 +30,22 @@ public class RecommendationService {
     private final HealthScoreService healthScoreService;
     private final PricingEngineService pricingEngineService;
     private final SalesMetricService salesMetricService;
+    private final GeminiExplanationService geminiExplanationService;
 
     public RecommendationService(
             RecommendationRepository recommendationRepository,
             ProfitGuardService profitGuardService,
             HealthScoreService healthScoreService,
             PricingEngineService pricingEngineService,
-            SalesMetricService salesMetricService
+            SalesMetricService salesMetricService,
+            GeminiExplanationService geminiExplanationService
     ) {
         this.recommendationRepository = recommendationRepository;
         this.profitGuardService = profitGuardService;
         this.healthScoreService = healthScoreService;
         this.pricingEngineService = pricingEngineService;
         this.salesMetricService = salesMetricService;
+        this.geminiExplanationService = geminiExplanationService;
     }
 
     public RecommendationResponse generateRecommendation(GenerateRecommendationRequest request) {
@@ -75,11 +79,24 @@ public class RecommendationService {
 
         String expectedImpact = decideExpectedImpact(type);
 
-        String reason = buildReason(
-                request,
+        /*
+         * Java backend has already decided:
+         * - recommendation type
+         * - recommended price
+         * - minimum safe price
+         * - health score
+         * - risk level
+         *
+         * Gemini is used only to polish the explanation text.
+         */
+        String reason = geminiExplanationService.generateReason(
                 type,
+                request.getCurrentPrice(),
+                request.getCompetitorPrice(),
+                recommendedPrice,
                 safePriceResponse.getMinimumSafePrice(),
-                recommendedPrice
+                healthScoreResponse.getHealthScore(),
+                riskLevel
         );
 
         Recommendation recommendation = new Recommendation();
@@ -176,6 +193,20 @@ public class RecommendationService {
         Recommendation saved = recommendationRepository.save(recommendation);
         return mapToResponse(saved);
     }
+    public RecommendationResponse applyRecommendation(Long id) {
+        Recommendation recommendation = recommendationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Recommendation not found with id: " + id));
+
+        if (recommendation.getStatus() != RecommendationStatus.APPROVED) {
+            throw new RuntimeException("Only APPROVED recommendations can be applied.");
+        }
+
+        recommendation.setStatus(RecommendationStatus.APPLIED);
+        recommendation.setUpdatedAt(LocalDateTime.now());
+
+        Recommendation saved = recommendationRepository.save(recommendation);
+        return mapToResponse(saved);
+    }
 
     private RiskLevel decideRiskLevel(
             RecommendationType type,
@@ -214,6 +245,10 @@ public class RecommendationService {
         return "Moderate improvement expected through alternative selling strategy.";
     }
 
+    /*
+     * Keeping this method as backup.
+     * Currently GeminiExplanationService is used for the final reason.
+     */
     private String buildReason(
             GenerateRecommendationRequest request,
             RecommendationType type,

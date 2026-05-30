@@ -8,7 +8,9 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import io.swagger.v3.oas.annotations.Operation;
 @RestController
 @RequestMapping("/api/recommendations")
 @CrossOrigin(origins = "*")
@@ -60,5 +62,10 @@ public class RecommendationController {
             @PathVariable Long id
     ) {
         return recommendationService.rejectRecommendation(id);
+    }
+    @PatchMapping("/{id}/apply")
+    @Operation(summary = "Apply approved recommendation")
+    public RecommendationResponse applyRecommendation(@PathVariable Long id) {
+        return recommendationService.applyRecommendation(id);
     }
 }

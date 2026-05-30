@@ -81,6 +81,16 @@ public class DiscountLifecycleService {
                 .toList();
     }
 
+    public DiscountLifecycleResponse getDiscountByRecommendationId(Long recommendationId) {
+        DiscountLifecycle discountLifecycle = discountLifecycleRepository.findByRecommendationId(recommendationId);
+
+        if (discountLifecycle == null) {
+            throw new RuntimeException("Discount lifecycle not found for recommendation id: " + recommendationId);
+        }
+
+        return mapToResponse(discountLifecycle);
+    }
+
     public void expireCompletedDiscounts() {
         List<DiscountLifecycle> expiredDiscounts = discountLifecycleRepository
                 .findByStatusAndExpiresAtBefore(DiscountStatus.ACTIVE, LocalDateTime.now());
