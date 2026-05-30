@@ -8,6 +8,7 @@ import com.pricepilot.security.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,12 +26,14 @@ public class UserController {
     private final JwtUtil jwtUtil;
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'PRICING_MANAGER')")
     public ResponseEntity<List<User>> getAllUsers(HttpServletRequest request) {
         Long tenantId = getTenantId(request);
         return ResponseEntity.ok(userRepo.findByTenantId(tenantId));
     }
 
     @PostMapping("/invite")
+    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
     public ResponseEntity<Map<String, Object>> inviteUser(
             @RequestBody Map<String, String> body, HttpServletRequest request) {
         Long tenantId = getTenantId(request);
@@ -77,6 +80,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
     public ResponseEntity<Map<String, String>> removeUser(
             @PathVariable Long id, HttpServletRequest request) {
         Long tenantId = getTenantId(request);

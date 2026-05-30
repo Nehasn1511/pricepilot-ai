@@ -5,6 +5,7 @@ import com.pricepilot.repository.*;
 import com.pricepilot.security.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -189,7 +190,7 @@ public class ProductController {
         return ResponseEntity.ok(allLogs);
     }
 
-    @PostMapping("/import-csv")
+    @PostMapping(value = "/import-csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, Object>> importCsv(
             @RequestParam("file") MultipartFile file, HttpServletRequest request) {
         Long tenantId = getTenantId(request);
