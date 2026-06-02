@@ -1,3 +1,5 @@
+import Reports from './pages/Reports';
+import MarketplaceAccounts from './pages/MarketplaceAccounts';
 import React, { useState } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Avatar, Dropdown, Typography } from 'antd';
@@ -35,12 +37,14 @@ function AppLayout() {
   };
 
   const menuItems = [
-    { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
-    { key: '/products', icon: <ShoppingOutlined />, label: 'Products' },
-    { key: '/recommendations', icon: <ThunderboltOutlined />, label: 'AI Recommendations' },
-    { key: '/users', icon: <TeamOutlined />, label: 'User Management' },
-    { key: '/audit-log', icon: <AuditOutlined />, label: 'Audit Log' },
-  ];
+  { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
+  { key: '/products', icon: <ShoppingOutlined />, label: 'Products' },
+  { key: '/recommendations', icon: <ThunderboltOutlined />, label: 'AI Recommendations' },
+  { key: '/marketplace-accounts', icon: <ShoppingOutlined />, label: 'Marketplace Accounts' },
+  { key: '/users', icon: <TeamOutlined />, label: 'User Management' },
+  { key: '/reports', icon: <AuditOutlined />, label: 'Reports' },
+  { key: '/audit-log', icon: <AuditOutlined />, label: 'Audit Log' },
+];
 
   const userMenu = {
     items: [
@@ -95,6 +99,8 @@ function AppLayout() {
             <Route path="/users" element={<UserManagement />} />
             <Route path="/audit-log" element={<AuditLog />} />
             <Route path="*" element={<Navigate to="/dashboard" />} />
+            <Route path="/marketplace-accounts" element={<MarketplaceAccounts />} />
+<Route path="/reports" element={<Reports />} />
           </Routes>
         </Content>
       </Layout>
