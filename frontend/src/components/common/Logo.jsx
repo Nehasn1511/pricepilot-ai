@@ -1,7 +1,8 @@
+import React from 'react';
+
 // PricePilot AI — Brand Logo
 // A price tag shape with an upward-trending arrow
 // Represents: pricing intelligence + growth direction
-
 const PricePilotLogo = ({ size = 36, showText = true, collapsed = false }) => {
   return (
     <div style={{
@@ -9,7 +10,6 @@ const PricePilotLogo = ({ size = 36, showText = true, collapsed = false }) => {
       alignItems: 'center',
       gap: collapsed ? 0 : 10,
     }}>
-
       {/* ── Icon mark ─────────────────────────────────── */}
       <svg
         width={size}
@@ -78,7 +78,6 @@ const PricePilotLogo = ({ size = 36, showText = true, collapsed = false }) => {
           </div>
         </div>
       )}
-
     </div>
   );
 };

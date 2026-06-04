@@ -4,7 +4,6 @@ import {
   Col,
   Card,
   Typography,
-  Tag,
   Button,
   Modal,
   Form,
@@ -72,82 +71,99 @@ const mockAccounts = [
 ];
 
 function AccountCard({ account, onSync }) {
-  const platform =
-    PLATFORM_CONFIG[account.platform] || PLATFORM_CONFIG.AMAZON;
+  const platform = PLATFORM_CONFIG[account.platform] || PLATFORM_CONFIG.AMAZON;
 
   return (
-    <Card style={{ borderRadius: 12 }}>
+    <Card 
+      className="ai-glow-card" 
+      styles={{ body: { padding: '24px' } }}
+      style={{ border: 'none' }}
+    >
       <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'flex-start',
-          marginBottom: 16,
+          marginBottom: 20,
         }}
       >
-        <Space>
+        <Space size="middle">
           <div
             style={{
-              width: 54,
-              height: 54,
+              width: 48,
+              height: 48,
               borderRadius: 12,
               background: platform.bg,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 24,
+              fontSize: 22,
             }}
           >
             {platform.emoji}
           </div>
 
           <div>
-            <div style={{ fontWeight: 700, fontSize: 18 }}>
+            <div style={{ fontWeight: 700, fontSize: 16, color: '#1e293b' }}>
               {platform.label}
             </div>
-
-            <Text type="secondary">{account.accountName}</Text>
+            <Text type="secondary" style={{ fontSize: 13 }}>
+              {account.accountName}
+            </Text>
           </div>
         </Space>
 
-        <Tag
-          color={account.isActive ? 'success' : 'error'}
-          icon={
-            account.isActive ? (
-              <CheckCircleOutlined />
-            ) : (
-              <CloseCircleOutlined />
-            )
-          }
+        {/* Replaced Ant Tag with Custom Premium Badges */}
+        <span 
+          className={`badge ${account.isActive ? 'badge-success' : 'badge-error'}`}
+          style={{ display: 'flex', alignItems: 'center', gap: 6 }}
         >
+          {account.isActive ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
           {account.isActive ? 'Connected' : 'Disconnected'}
-        </Tag>
+        </span>
       </div>
 
-      <div style={{ marginBottom: 8 }}>
-        <Text type="secondary">
-          Added:{' '}
-          {new Date(account.createdAt).toLocaleDateString('en-IN')}
+      <div style={{ marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <Text type="secondary" style={{ fontSize: 13 }}>
+          <span style={{ color: '#94a3b8', marginRight: 8 }}>Added:</span>
+          <span style={{ fontWeight: 500, color: '#475569' }}>
+            {new Date(account.createdAt).toLocaleDateString('en-IN')}
+          </span>
+        </Text>
+        
+        <Text type="secondary" style={{ fontSize: 13 }}>
+          <span style={{ color: '#94a3b8', marginRight: 8 }}>Last Sync:</span>
+          <span style={{ fontWeight: 500, color: '#475569' }}>
+            {account.lastSync
+              ? new Date(account.lastSync).toLocaleString('en-IN', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  day: 'numeric',
+                  month: 'short'
+                })
+              : 'Never'}
+          </span>
         </Text>
       </div>
 
-      <div style={{ marginBottom: 16 }}>
-        <Text type="secondary">
-          Last Sync:{' '}
-          {account.lastSync
-            ? new Date(account.lastSync).toLocaleString('en-IN')
-            : 'Never'}
-        </Text>
+      <div style={{ marginTop: 24 }}>
+        <Button
+          block
+          icon={<SyncOutlined />}
+          onClick={() => onSync(account.id)}
+          disabled={!account.isActive}
+          style={{ 
+            borderRadius: 8, 
+            height: 38,
+            fontWeight: 600,
+            background: account.isActive ? 'transparent' : '#f8fafc',
+            borderColor: '#e2e8f0',
+            color: account.isActive ? '#475569' : '#cbd5e1'
+          }}
+        >
+          Sync Now
+        </Button>
       </div>
-
-      <Button
-        block
-        icon={<SyncOutlined />}
-        onClick={() => onSync(account.id)}
-        disabled={!account.isActive}
-      >
-        Sync Now
-      </Button>
     </Card>
   );
 }
@@ -208,9 +224,7 @@ export default function MarketplaceAccounts() {
     };
 
     setAccounts((prev) => [...prev, newAccount]);
-
     message.success('Marketplace account added');
-
     form.resetFields();
     setOpen(false);
   };
@@ -221,13 +235,15 @@ export default function MarketplaceAccounts() {
         style={{
           display: 'flex',
           justifyContent: 'space-between',
+          alignItems: 'center',
           marginBottom: 24,
         }}
       >
         <div>
-          <Title level={2}>Marketplace Accounts</Title>
-
-          <Text type="secondary">
+          <Title level={3} style={{ margin: 0, fontWeight: 800, color: '#0f172a' }}>
+            Marketplace Accounts
+          </Title>
+          <Text type="secondary" style={{ fontSize: 14 }}>
             Manage your connected store accounts
           </Text>
         </div>
@@ -236,46 +252,62 @@ export default function MarketplaceAccounts() {
           type="primary"
           icon={<PlusOutlined />}
           onClick={() => setOpen(true)}
+          size="large"
         >
           Connect Marketplace
         </Button>
       </div>
 
-      <Row gutter={[16, 16]}>
+      <Row gutter={[20, 20]}>
         {accounts.map((account) => (
-          <Col xs={24} md={12} lg={8} key={account.id}>
+          <Col xs={24} md={12} xl={8} key={account.id}>
             <AccountCard account={account} onSync={handleSync} />
           </Col>
         ))}
       </Row>
 
       <Modal
-        title="Connect New Marketplace"
+        title={
+          <span style={{ fontSize: 18, fontWeight: 700, color: '#0f172a' }}>
+            Connect New Marketplace
+          </span>
+        }
         open={open}
         onCancel={() => setOpen(false)}
         onOk={() => form.submit()}
+        okText="Connect"
+        cancelText="Cancel"
+        okButtonProps={{ type: 'primary', size: 'large' }}
+        cancelButtonProps={{ size: 'large' }}
+        centered
+        styles={{
+          content: { borderRadius: 16, padding: '24px 32px' }
+        }}
       >
-        <Form form={form} layout="vertical" onFinish={handleAdd}>
-          <Form.Item
-            name="platform"
-            label="Platform"
-            rules={[{ required: true }]}
-          >
-            <Select placeholder="Select marketplace">
-              <Select.Option value="AMAZON">Amazon</Select.Option>
-              <Select.Option value="FLIPKART">Flipkart</Select.Option>
-              <Select.Option value="MEESHO">Meesho</Select.Option>
-            </Select>
-          </Form.Item>
+        <div style={{ marginTop: 24 }}>
+          <Form form={form} layout="vertical" onFinish={handleAdd}>
+            <Form.Item
+              name="platform"
+              label={<span style={{ fontWeight: 500 }}>Platform</span>}
+              rules={[{ required: true, message: 'Please select a platform' }]}
+            >
+              <Select size="large" placeholder="Select marketplace">
+                <Select.Option value="AMAZON">Amazon</Select.Option>
+                <Select.Option value="FLIPKART">Flipkart</Select.Option>
+                <Select.Option value="MEESHO">Meesho</Select.Option>
+              </Select>
+            </Form.Item>
 
-          <Form.Item
-            name="accountName"
-            label="Store Name"
-            rules={[{ required: true }]}
-          >
-            <Input placeholder="Store name" />
-          </Form.Item>
-        </Form>
+            <Form.Item
+              name="accountName"
+              label={<span style={{ fontWeight: 500 }}>Store Name</span>}
+              rules={[{ required: true, message: 'Please enter a store name' }]}
+              style={{ marginBottom: 8 }}
+            >
+              <Input size="large" placeholder="e.g., My Amazon Store" />
+            </Form.Item>
+          </Form>
+        </div>
       </Modal>
     </div>
   );

@@ -10,8 +10,8 @@ import {
   ShopOutlined,
   SettingOutlined,
 } from '@ant-design/icons';
-import { ROUTES } from '../../utils/constants';
-import PricePilotLogo from '../common/Logo';
+import { ROUTES } from '../../utils/constants'; // Adjust path if needed
+import PricePilotLogo from '../common/Logo';    // Adjust path if needed
 
 const menuItems = [
   {
@@ -58,7 +58,6 @@ const menuItems = [
   },
 ];
 
-// When sidebar is collapsed, groups break the layout — use flat list instead
 const flatMenuItems = [
   { key: ROUTES.DASHBOARD,              icon: <DashboardOutlined />,  label: 'Dashboard' },
   { key: ROUTES.PRODUCTS,               icon: <ShoppingOutlined />,   label: 'Products' },
@@ -74,7 +73,6 @@ const flatMenuItems = [
 const Sidebar = ({ collapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
-
   const activeKey = '/' + location.pathname.split('/')[1];
 
   return (
@@ -82,9 +80,8 @@ const Sidebar = ({ collapsed }) => {
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
-      background: '#0f172a',    // Deep navy — more premium than default Ant dark
+      background: '#0f172a',
     }}>
-
       {/* ── Logo area ────────────────────────────────────── */}
       <div style={{
         height: 64,
@@ -125,7 +122,6 @@ const Sidebar = ({ collapsed }) => {
           PricePilot AI · v1.0.0
         </div>
       )}
-
     </div>
   );
 };

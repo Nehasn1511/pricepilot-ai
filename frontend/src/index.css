@@ -1,130 +1,152 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #ffffff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-
-  color: var(--text);
-  background: var(--bg);
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* ─────────────────────────────────────────────
-   Global
-───────────────────────────────────────────── */
-
-* {
-  box-sizing: border-box;
+/* ── 1. Reset & Base Typography ─────────────────────────── */
+* { 
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box; 
 }
 
 body {
-  margin: 0;
-  background: #0b1120;
-  overflow-x: hidden;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--ant-color-bg-layout, #f8fafc);
+  color: var(--ant-color-text, #0f172a);
 }
 
-#root {
-  width: 100%;
-  max-width: 100%;
-  min-height: 100vh;
+/* ── 2. Scrollbar ───────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ant-color-border, #d1d5db); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ant-color-text-secondary, #9ca3af); }
+
+/* ── 3. Page Transitions ────────────────────────────────── */
+.ant-layout-content > div {
+  animation: fadeIn 0.3s ease-out;
 }
 
-/* ─────────────────────────────────────────────
-   Typography
-───────────────────────────────────────────── */
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  margin: 0;
-  font-family: var(--heading);
-  color: var(--text-h);
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-p {
-  margin: 0;
+/* ── 4. Global Ant Design Overrides ─────────────────────── */
+.ant-card {
+  border-radius: 16px !important;
 }
 
-/* ─────────────────────────────────────────────
-   Login Layout
-───────────────────────────────────────────── */
-
-.login-container {
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  min-height: 100vh;
+.ant-tag {
+  border-radius: 6px !important;
+  font-weight: 500 !important;
 }
 
-.login-brand-panel {
-  background: #0f172a;
+/* ── 5. Premium Buttons ─────────────────────────────────── */
+.ant-btn {
+  border-radius: 8px !important;
+  font-weight: 500 !important;
 }
 
-.login-form-panel {
-  background: #ffffff;
+.ant-btn-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+  transition: all 0.2s ease;
 }
 
-/* ─────────────────────────────────────────────
-   Tablet
-───────────────────────────────────────────── */
-
-@media (max-width: 1024px) {
-  :root {
-    font-size: 16px;
-  }
-
-  .login-container {
-    grid-template-columns: 1fr !important;
-  }
-
-  .login-brand-panel {
-    display: none !important;
-  }
-
-  .login-form-panel {
-    width: 100%;
-    padding: 48px 32px !important;
-  }
+.ant-btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4) !important;
 }
 
-/* ─────────────────────────────────────────────
-   Mobile
-───────────────────────────────────────────── */
+/* ── 6. Premium Floating Animations ─────────────────────── */
+.floating-card {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+}
 
+.floating-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px -5px rgba(0,0,0,0.3) !important;
+}
+
+/* ── 7. Modern AI Tables (Dark Mode Safe) ───────────────── */
+.ant-table-wrapper {
+  background: var(--ant-color-bg-container, #ffffff);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02);
+  border: 1px solid var(--ant-color-border-secondary, #e2e8f0);
+}
+
+.ant-table-thead > tr > th {
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  background: var(--ant-color-bg-layout, #f8fafc) !important;
+  color: var(--ant-color-text-secondary, #64748b) !important;
+  border-bottom: 1px solid var(--ant-color-border-secondary, #f1f5f9) !important;
+}
+
+.ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--ant-color-border-secondary, #f8fafc) !important;
+  font-size: 14px;
+}
+
+.ant-table-row { 
+  cursor: pointer; 
+  transition: background 0.15s; 
+}
+
+/* ── 8. The AI Glow Card (Dark Mode Safe) ───────────────── */
+/* Add className="ai-glow-card" to specific Ant Cards */
+.ai-glow-card {
+  position: relative;
+  background: var(--ant-color-bg-container, #ffffff) !important;
+  border-radius: 16px;
+  border: 1px solid var(--ant-color-border-secondary, rgba(99, 102, 241, 0.1));
+  box-shadow: 0 4px 24px -8px rgba(99, 102, 241, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.ai-glow-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -8px rgba(99, 102, 241, 0.25);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.ai-glow-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #6366f1, #a855f7, #ec4899);
+  opacity: 0.8;
+}
+
+/* ── 9. Soft Status Badges ──────────────────────────────── */
+/* Use these classes on <span> tags instead of harsh colors */
+.badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 12px;
+  display: inline-block;
+}
+
+.badge-success { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.badge-pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+.badge-error   { background: rgba(239, 68, 68, 0.15);  color: #ef4444; }
+.badge-info    { background: rgba(99, 102, 241, 0.15); color: #6366f1; }
+.badge-neutral { background: rgba(100, 116, 139, 0.15); color: #94a3b8; }
+
+/* ── 10. Mobile Responsiveness ──────────────────────────── */
 @media (max-width: 768px) {
-  .login-form-panel {
-    padding: 32px 20px !important;
-  }
-}
-
-/* ─────────────────────────────────────────────
-   Scrollbar
-───────────────────────────────────────────── */
-
-::-webkit-scrollbar {
-  width: 4px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.12);
-  border-radius: 2px;
+  .login-brand-panel { display: none !important; }
+  .login-form-panel  { grid-column: 1 / -1 !important; padding: 40px 24px !important; }
+  .ant-table-wrapper { overflow-x: auto; }
 }

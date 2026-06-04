@@ -1,21 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  Card,
-  Button,
-  Tag,
-  Space,
-  Typography,
-  Row,
-  Col,
-  Modal,
-  Statistic,
-  Input,
-  message,
-  Badge,
-  Tabs,
-  Select,
-  Checkbox,
-  notification
+  Card, Button, Tag, Space, Typography, Row, Col, Modal,
+  Statistic, Input, Badge, Tabs, Select, Checkbox, notification
 } from 'antd';
 import {
   ThunderboltOutlined, CheckOutlined, CloseOutlined,
@@ -27,64 +13,111 @@ import axiosClient from '../api/axiosClient';
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 
+// ── Demo fallback data ─────────────────────────────────────────
 const demoRecommendations = [
   {
-    id: 1, productName: 'Wireless Keyboard Pro', platform: 'AMAZON',
-    recommendationType: 'PRICE_MATCH', currentPrice: 1499,
-    recommendedPrice: 1299, minimumSafePrice: 1100,
-    lowestMarketPrice: 1299, discountPercent: 13.3,
+    id: 1,
+    productName: 'Wireless Keyboard Pro',
+    platform: 'AMAZON',
+    recommendationType: 'PRICE_MATCH',
+    currentPrice: 1499,
+    recommendedPrice: 1299,
+    minimumSafePrice: 1100,
+    lowestMarketPrice: 1299,
+    discountPercent: 13.3,
     reason: 'Product is priced ₹200 higher than the lowest marketplace price.',
     aiExplanation: 'Your Wireless Keyboard Pro on Amazon has 900 views but only 2 orders in 7 days. Reducing to ₹1299 gives ₹199 above your safe price of ₹1100.',
-    riskLevel: 'LOW', expectedImpact: 'Medium to High',
-    durationDays: 5, status: 'PENDING',
-    viewsLast7Days: 900, ordersLast7Days: 2, stockQuantity: 120,
+    riskLevel: 'LOW',
+    expectedImpact: 'Medium to High',
+    durationDays: 5,
+    status: 'PENDING',
+    viewsLast7Days: 900,
+    ordersLast7Days: 2,
+    stockQuantity: 120,
   },
   {
-    id: 2, productName: 'USB-C Hub 7-in-1', platform: 'AMAZON',
-    recommendationType: 'STOCK_CLEARANCE', currentPrice: 2499,
-    recommendedPrice: 2124, minimumSafePrice: 1680,
-    lowestMarketPrice: 2199, discountPercent: 15.0,
+    id: 2,
+    productName: 'USB-C Hub 7-in-1',
+    platform: 'AMAZON',
+    recommendationType: 'STOCK_CLEARANCE',
+    currentPrice: 2499,
+    recommendedPrice: 2124,
+    minimumSafePrice: 1680,
+    lowestMarketPrice: 2199,
+    discountPercent: 15.0,
     reason: 'High inventory with low sales velocity.',
     aiExplanation: 'Your USB-C Hub has 80 units in stock but zero orders this week. A 15% markdown to ₹2124 stays well above your floor of ₹1680.',
-    riskLevel: 'LOW', expectedImpact: 'High',
-    durationDays: 5, status: 'PENDING',
-    viewsLast7Days: 450, ordersLast7Days: 0, stockQuantity: 80,
+    riskLevel: 'LOW',
+    expectedImpact: 'High',
+    durationDays: 5,
+    status: 'PENDING',
+    viewsLast7Days: 450,
+    ordersLast7Days: 0,
+    stockQuantity: 80,
   },
   {
-    id: 3, productName: 'Samsung 25W Charger', platform: 'AMAZON',
-    recommendationType: 'PRICE_INCREASE', currentPrice: 899,
-    recommendedPrice: 944, minimumSafePrice: 700,
-    lowestMarketPrice: 799, discountPercent: -5.0,
-    reason: 'Sales are strong. Market demand supports a price increase.',
-    aiExplanation: 'Your Samsung 25W Charger achieves 65 orders from 2100 views. A 5% increase adds ₹2,925 weekly profit.',
-    riskLevel: 'LOW', expectedImpact: 'Increased profit per unit',
-    durationDays: null, status: 'APPROVED',
-    viewsLast7Days: 2100, ordersLast7Days: 65, stockQuantity: 200,
+    id: 3,
+    productName: 'Samsung 25W Charger',
+    platform: 'AMAZON',
+    recommendationType: 'PRICE_INCREASE',
+    currentPrice: 899,
+    recommendedPrice: 944,
+    minimumSafePrice: 700,
+    lowestMarketPrice: 799,
+    discountPercent: -5.0,
+    reason: 'Strong sales at current price support a price increase.',
+    aiExplanation: 'Samsung 25W Charger achieves 65 orders from 2100 views. A 5% increase to ₹944 adds ₹2,925 weekly profit at current volume.',
+    riskLevel: 'LOW',
+    expectedImpact: 'Increased profit per unit',
+    durationDays: null,
+    status: 'APPROVED',
+    viewsLast7Days: 2100,
+    ordersLast7Days: 65,
+    stockQuantity: 200,
   },
   {
-    id: 4, productName: 'Phone Case Clear', platform: 'MEESHO',
-    recommendationType: 'MARGIN_PROTECTION', currentPrice: 799,
-    recommendedPrice: 799, minimumSafePrice: 380,
-    lowestMarketPrice: 499, discountPercent: 0,
-    reason: 'Price cut risky — listing quality should be improved first.',
-    aiExplanation: 'While the ₹300 price gap vs Meesho looks concerning, 1200 views with zero conversions suggests a listing quality issue, not a pricing issue.',
-    riskLevel: 'MEDIUM', expectedImpact: 'Consider alternative strategies',
-    durationDays: null, status: 'REJECTED',
-    viewsLast7Days: 1200, ordersLast7Days: 0, stockQuantity: 500,
+    id: 4,
+    productName: 'Phone Case Clear',
+    platform: 'MEESHO',
+    recommendationType: 'MARGIN_PROTECTION',
+    currentPrice: 799,
+    recommendedPrice: 799,
+    minimumSafePrice: 380,
+    lowestMarketPrice: 499,
+    discountPercent: 0,
+    reason: 'Price cut is risky — listing quality improvement recommended first.',
+    aiExplanation: '1200 views with zero conversions suggests a listing quality issue, not a pricing issue. Improve images and bullet points first.',
+    riskLevel: 'MEDIUM',
+    expectedImpact: 'Consider alternative strategies',
+    durationDays: null,
+    status: 'REJECTED',
+    viewsLast7Days: 1200,
+    ordersLast7Days: 0,
+    stockQuantity: 500,
   },
   {
-    id: 5, productName: 'boAt Rockerz 255 Pro', platform: 'FLIPKART',
-    recommendationType: 'TEMPORARY_DISCOUNT', currentPrice: 1299,
-    recommendedPrice: 1099, minimumSafePrice: 1050,
-    lowestMarketPrice: 1150, discountPercent: 15.4,
-    reason: 'High views with declining orders. A temporary discount should recover sales.',
-    aiExplanation: 'Product had 890 views last week but orders dropped from 35 to 12. A 15% temporary discount for 7 days should recover momentum.',
-    riskLevel: 'MEDIUM', expectedImpact: 'Sales recovery expected',
-    durationDays: 7, status: 'PENDING',
-    viewsLast7Days: 890, ordersLast7Days: 12, stockQuantity: 60,
+    id: 5,
+    productName: 'boAt Rockerz 255 Pro',
+    platform: 'FLIPKART',
+    recommendationType: 'TEMPORARY_DISCOUNT',
+    currentPrice: 1299,
+    recommendedPrice: 1099,
+    minimumSafePrice: 1050,
+    lowestMarketPrice: 1150,
+    discountPercent: 15.4,
+    reason: 'High views with declining orders. Temporary discount should recover sales.',
+    aiExplanation: 'Product had 890 views but orders dropped from 35 to 12. A 15% temporary discount for 7 days should recover momentum.',
+    riskLevel: 'MEDIUM',
+    expectedImpact: 'Sales recovery expected',
+    durationDays: 7,
+    status: 'PENDING',
+    viewsLast7Days: 890,
+    ordersLast7Days: 12,
+    stockQuantity: 60,
   },
 ];
 
+// ── Config maps ────────────────────────────────────────────────
 const typeConfig = {
   PRICE_MATCH:        { color: 'blue',   label: 'Price Match',       icon: '🎯' },
   TEMPORARY_DISCOUNT: { color: 'orange', label: 'Temp Discount',     icon: '⏰' },
@@ -100,6 +133,12 @@ const riskConfig = {
   HIGH:   { color: 'error',   text: 'High Risk'   },
 };
 
+const platformColor = {
+  AMAZON: 'orange', FLIPKART: 'blue', MEESHO: 'pink',
+  MYNTRA: 'purple', SHOPIFY: 'green', OTHER: 'default',
+};
+
+// ── Main component ─────────────────────────────────────────────
 export default function Recommendations() {
   const [recs,         setRecs]         = useState([]);
   const [activeTab,    setActiveTab]    = useState('ALL');
@@ -110,49 +149,58 @@ export default function Recommendations() {
   const [comments,     setComments]     = useState('');
   const [bulkLoading,  setBulkLoading]  = useState(false);
 
-  // ── Fetch recommendations ──────────────────────────────
+  // ── Fetch recommendations with demo fallback ───────────────
   useEffect(() => {
-    const fetch = async () => {
+    const fetchRecs = async () => {
       try {
         const res = await axiosClient.get('/recommendations');
         const data = Array.isArray(res.data)
-          ? res.data : res.data.content ?? [];
-        const mapped = data.map(r => ({
-          id:                 r.id,
-          productName:        r.masterProduct?.name    || r.productName    || 'Unknown',
-          platform:           r.marketplaceProduct?.platform || r.platform || 'AMAZON',
-          recommendationType: r.recommendationType     || 'PRICE_MATCH',
-          currentPrice:       r.currentPrice           || 0,
-          recommendedPrice:   r.recommendedPrice       || 0,
-          minimumSafePrice:   r.minimumSafePrice       || 0,
-          lowestMarketPrice:  r.lowestMarketPrice      || 0,
-          discountPercent:    r.discountPercent        || 0,
-          reason:             r.reason                 || '',
-          aiExplanation:      r.aiExplanation          || '',
-          riskLevel:          r.riskLevel              || 'LOW',
-          expectedImpact:     r.expectedImpact         || '',
-          durationDays:       r.durationDays           || null,
-          status:             r.status                 || 'PENDING',
-          viewsLast7Days:     r.marketplaceProduct?.viewsLast7Days  || 0,
-          ordersLast7Days:    r.marketplaceProduct?.ordersLast7Days || 0,
-          stockQuantity:      r.marketplaceProduct?.stockQuantity   || 0,
-        }));
-        setRecs(mapped.length > 0 ? mapped : demoRecommendations);
+          ? res.data
+          : res.data.content ?? [];
+
+        if (data.length > 0) {
+          // Map real backend fields to component fields
+          const mapped = data.map(r => ({
+            id:                 r.id,
+            productName:        r.masterProduct?.name || r.productName || 'Unknown',
+            platform:           r.marketplaceProduct?.platform || r.platform || 'AMAZON',
+            recommendationType: r.recommendationType || 'PRICE_MATCH',
+            currentPrice:       r.currentPrice       || 0,
+            recommendedPrice:   r.recommendedPrice    || 0,
+            minimumSafePrice:   r.minimumSafePrice    || 0,
+            lowestMarketPrice:  r.lowestMarketPrice   || 0,
+            discountPercent:    r.discountPercent     || 0,
+            reason:             r.reason              || '',
+            aiExplanation:      r.aiExplanation       || '',
+            riskLevel:          r.riskLevel           || 'LOW',
+            expectedImpact:     r.expectedImpact      || '',
+            durationDays:       r.durationDays        || null,
+            status:             r.status              || 'PENDING',
+            viewsLast7Days:     r.marketplaceProduct?.viewsLast7Days  || 0,
+            ordersLast7Days:    r.marketplaceProduct?.ordersLast7Days || 0,
+            stockQuantity:      r.marketplaceProduct?.stockQuantity   || 0,
+          }));
+          setRecs(mapped);
+        } else {
+          // API returned empty — use demo data
+          setRecs(demoRecommendations);
+        }
       } catch {
+        // API failed — use demo data
         setRecs(demoRecommendations);
       }
     };
-    fetch();
+    fetchRecs();
   }, []);
 
-  // ── Filtered list ──────────────────────────────────────
+  // ── Filtered list ──────────────────────────────────────────
   const filtered = useMemo(() => recs.filter(r => {
     const statusMatch = activeTab === 'ALL' || r.status === activeTab;
     const typeMatch   = !typeFilter || r.recommendationType === typeFilter;
     return statusMatch && typeMatch;
   }), [recs, activeTab, typeFilter]);
 
-  // ── Counts for tabs ────────────────────────────────────
+  // ── Counts for tabs ────────────────────────────────────────
   const counts = useMemo(() => ({
     ALL:      recs.length,
     PENDING:  recs.filter(r => r.status === 'PENDING').length,
@@ -160,10 +208,11 @@ export default function Recommendations() {
     REJECTED: recs.filter(r => r.status === 'REJECTED').length,
   }), [recs]);
 
+  // ── Status update helper ───────────────────────────────────
   const updateStatus = (id, status) =>
     setRecs(prev => prev.map(r => r.id === id ? { ...r, status } : r));
 
-  // ── Single approve ─────────────────────────────────────
+  // ── Single approve ─────────────────────────────────────────
   const handleApprove = async (id) => {
     updateStatus(id, 'APPROVED');
     try {
@@ -177,7 +226,7 @@ export default function Recommendations() {
     setComments('');
   };
 
-  // ── Single reject ──────────────────────────────────────
+  // ── Single reject ──────────────────────────────────────────
   const handleReject = async (id) => {
     updateStatus(id, 'REJECTED');
     try {
@@ -185,13 +234,13 @@ export default function Recommendations() {
       notification.info({ message: 'Recommendation Rejected', placement: 'topRight' });
     } catch {
       updateStatus(id, 'PENDING');
-      notification.error({ message: 'Action failed. Try again.', placement: 'topRight' });
+      notification.error({ message: 'Rejection failed. Try again.', placement: 'topRight' });
     }
     setRejectModal(null);
     setComments('');
   };
 
-  // ── Bulk approve ───────────────────────────────────────
+  // ── Bulk approve ───────────────────────────────────────────
   const handleBulkApprove = async () => {
     if (!selectedIds.length) return;
     setBulkLoading(true);
@@ -212,6 +261,32 @@ export default function Recommendations() {
     if (failed.length > 0) notification.error({ message: `${failed.length} failed` });
   };
 
+  // ── Generate demo recommendation ───────────────────────────
+  const handleGenerateNew = () => {
+    const newRec = {
+      id: Date.now(),
+      productName: 'New Demo Product',
+      platform: 'AMAZON',
+      recommendationType: 'PRICE_MATCH',
+      currentPrice: 2000,
+      recommendedPrice: 1800,
+      minimumSafePrice: 1500,
+      lowestMarketPrice: 1800,
+      discountPercent: 10,
+      reason: 'Competitor price is ₹200 lower. Matching improves conversion.',
+      aiExplanation: 'AI detected pricing opportunity. Matching competitor price while staying above safe price.',
+      riskLevel: 'LOW',
+      expectedImpact: 'Medium',
+      durationDays: 7,
+      status: 'PENDING',
+      viewsLast7Days: 500,
+      ordersLast7Days: 5,
+      stockQuantity: 50,
+    };
+    setRecs(prev => [newRec, ...prev]);
+    notification.success({ message: 'New recommendation generated' });
+  };
+
   const toggleSelect = (id) =>
     setSelectedIds(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
@@ -220,54 +295,74 @@ export default function Recommendations() {
   const pendingInFiltered = filtered.filter(r => r.status === 'PENDING');
 
   const tabItems = [
-    { key: 'ALL',      label: <span>All <Badge count={counts.ALL} style={{ background: '#8c8c8c' }} /></span> },
-    { key: 'PENDING',  label: <span>Pending <Badge count={counts.PENDING} style={{ background: '#1677ff' }} /></span> },
-    { key: 'APPROVED', label: <span>Approved <Badge count={counts.APPROVED} style={{ background: '#52c41a' }} /></span> },
-    { key: 'REJECTED', label: <span>Rejected <Badge count={counts.REJECTED} style={{ background: '#ff4d4f' }} /></span> },
+    { key: 'ALL',      label: <span>All <Badge count={counts.ALL} style={{ background: '#64748b' }} /></span> },
+    { key: 'PENDING',  label: <span>Pending <Badge count={counts.PENDING} style={{ background: '#6366f1' }} /></span> },
+    { key: 'APPROVED', label: <span>Approved <Badge count={counts.APPROVED} style={{ background: '#10b981' }} /></span> },
+    { key: 'REJECTED', label: <span>Rejected <Badge count={counts.REJECTED} style={{ background: '#ef4444' }} /></span> },
   ];
 
   return (
     <div>
-      {/* Header */}
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Title level={3} style={{ margin: 0 }}>AI Recommendations</Title>
-        <Space>
+
+      {/* ── Page header ───────────────────────────────────── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <div>
+          <Title level={3} style={{ margin: 0, fontWeight: 800 }}>
+            AI Recommendations
+          </Title>
+          <Text type="secondary" style={{ fontSize: 14 }}>
+            Approve or reject automated pricing optimizations
+          </Text>
+        </div>
+        <Space size="middle">
           {selectedIds.length > 0 && (
             <Button
-              type="primary"
-              icon={<ThunderboltOutlined />}
-              loading={bulkLoading}
-              onClick={handleBulkApprove}
-              style={{ background: '#52c41a', borderColor: '#52c41a' }}
+              type="primary" icon={<ThunderboltOutlined />}
+              loading={bulkLoading} onClick={handleBulkApprove}
+              style={{ background: '#10b981', borderColor: '#10b981', borderRadius: 8 }}
             >
               Approve {selectedIds.length} Selected
             </Button>
           )}
-          <Button type="primary" icon={<ExperimentOutlined />}>
+          <Button
+            icon={<ExperimentOutlined />}
+            onClick={handleGenerateNew}
+            style={{ borderRadius: 8, fontWeight: 600, height: 40 }}
+          >
             Generate New
           </Button>
         </Space>
-      </Row>
+      </div>
 
-      {/* Summary stats */}
-      <Row gutter={16} style={{ marginBottom: 20 }}>
+      {/* ── Summary stats ─────────────────────────────────── */}
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         {[
-          { label: 'Pending',  value: counts.PENDING,  color: '#1677ff' },
-          { label: 'Approved', value: counts.APPROVED, color: '#52c41a' },
-          { label: 'Rejected', value: counts.REJECTED, color: '#ff4d4f' },
-          { label: 'Total',    value: counts.ALL,       color: '#722ed1' },
+          { label: 'Pending',  value: counts.PENDING,  color: '#6366f1', bg: 'rgba(99,102,241,0.06)'  },
+          { label: 'Approved', value: counts.APPROVED, color: '#10b981', bg: 'rgba(16,185,129,0.06)'  },
+          { label: 'Rejected', value: counts.REJECTED, color: '#ef4444', bg: 'rgba(239,68,68,0.06)'   },
+          { label: 'Total',    value: counts.ALL,      color: '#8b5cf6', bg: 'rgba(139,92,246,0.06)'  },
         ].map(s => (
-          <Col span={6} key={s.label}>
-            <Card size="small" style={{ borderRadius: 10 }}>
-              <Statistic title={s.label} value={s.value} valueStyle={{ color: s.color }} />
+          <Col xs={12} sm={6} key={s.label}>
+            <Card
+              style={{ borderRadius: 14, background: s.bg, border: '1px solid rgba(0,0,0,0.06)' }}
+              styles={{ body: { padding: '16px 20px' } }}
+            >
+              <Statistic
+                title={<span style={{ fontWeight: 500, fontSize: 13 }}>{s.label}</span>}
+                value={s.value}
+                valueStyle={{ color: s.color, fontWeight: 800, fontSize: 26 }}
+              />
             </Card>
           </Col>
         ))}
       </Row>
 
-      {/* Filters */}
-      <Card style={{ borderRadius: 12, marginBottom: 16 }} styles={{ body: { padding: '0 20px' } }}>
-        <Row justify="space-between" align="center">
+      {/* ── Filters bar ───────────────────────────────────── */}
+      <Card
+        style={{ borderRadius: 14, marginBottom: 20, border: '1px solid rgba(0,0,0,0.06)' }}
+        styles={{ body: { padding: '0 20px' } }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Tabs
             activeKey={activeTab}
             onChange={(k) => { setActiveTab(k); setSelectedIds([]); }}
@@ -277,7 +372,8 @@ export default function Recommendations() {
           <Select
             placeholder="All Types"
             allowClear
-            style={{ width: 200, margin: '12px 0' }}
+            size="middle"
+            style={{ width: 220, margin: '12px 0' }}
             onChange={(v) => setTypeFilter(v || '')}
             options={[
               { label: 'All Types', value: '' },
@@ -286,13 +382,13 @@ export default function Recommendations() {
               })),
             ]}
           />
-        </Row>
+        </div>
       </Card>
 
-      {/* Select all for pending */}
+      {/* ── Select all bar ────────────────────────────────── */}
       {activeTab === 'PENDING' && pendingInFiltered.length > 0 && (
         <div style={{
-          background: '#f0f9ff', borderRadius: 8, padding: '8px 16px',
+          background: '#eff6ff', borderRadius: 8, padding: '8px 16px',
           marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12,
         }}>
           <Checkbox
@@ -305,168 +401,311 @@ export default function Recommendations() {
           <Text style={{ fontSize: 13 }}>
             {selectedIds.length > 0
               ? `${selectedIds.length} of ${pendingInFiltered.length} selected`
-              : `Select all ${pendingInFiltered.length} pending`}
+              : `Select all ${pendingInFiltered.length} pending`
+            }
           </Text>
         </div>
       )}
 
-      {/* Recommendation cards */}
-      {filtered.length === 0 ? (
-        <Card style={{ borderRadius: 12, textAlign: 'center', padding: 40 }}>
-          <Text type="secondary">No recommendations match your filters</Text>
-        </Card>
-      ) : (
-        filtered.map(rec => (
-          <div key={rec.id} style={{ position: 'relative' }}>
-            {rec.status === 'PENDING' && (
-              <div style={{ position: 'absolute', top: 20, left: -28, zIndex: 1 }}>
-                <Checkbox
-                  checked={selectedIds.includes(rec.id)}
-                  onChange={() => toggleSelect(rec.id)}
-                />
-              </div>
-            )}
-            <Card
-              style={{
-                marginBottom: 16, borderRadius: 12,
-                opacity: rec.status !== 'PENDING' ? 0.8 : 1,
-                border: rec.riskLevel === 'HIGH' ? '1px solid #ffccc7'
-                  : rec.riskLevel === 'MEDIUM' ? '1px solid #ffe58f'
-                  : '1px solid #f0f0f0',
-              }}
-            >
-              <Row gutter={24}>
-                <Col xs={24} md={16}>
-                  <Space style={{ marginBottom: 8 }} wrap>
-                    <Text style={{ fontSize: 20 }}>{typeConfig[rec.recommendationType]?.icon}</Text>
-                    <Title level={5} style={{ margin: 0 }}>{rec.productName}</Title>
-                    <Tag color={rec.platform === 'AMAZON' ? 'orange' : 'blue'}>{rec.platform}</Tag>
-                    <Tag color={typeConfig[rec.recommendationType]?.color}>
-                      {typeConfig[rec.recommendationType]?.label}
-                    </Tag>
-                    <Tag color={riskConfig[rec.riskLevel]?.color}>
-                      {riskConfig[rec.riskLevel]?.text}
-                    </Tag>
-                    {rec.status !== 'PENDING' && (
-                      <Tag color={rec.status === 'APPROVED' ? 'success' : 'default'}>
-                        {rec.status}
-                      </Tag>
-                    )}
-                  </Space>
-
-                  <Row gutter={16} style={{ marginBottom: 12 }}>
-                    <Col><Statistic title="Current" value={rec.currentPrice} prefix="₹" valueStyle={{ fontSize: 16 }} /></Col>
-                    <Col>
-                      <Statistic
-                        title="Recommended" value={rec.recommendedPrice} prefix="₹"
-                        valueStyle={{ fontSize: 16, color: rec.recommendedPrice < rec.currentPrice ? '#52c41a' : '#ff4d4f' }}
-                        suffix={rec.discountPercent > 0 ? <ArrowDownOutlined /> : rec.discountPercent < 0 ? <ArrowUpOutlined /> : null}
-                      />
-                    </Col>
-                    <Col><Statistic title="Safe Price" value={rec.minimumSafePrice} prefix="₹" valueStyle={{ fontSize: 16, color: '#722ed1' }} /></Col>
-                    <Col><Statistic title="Market Low" value={rec.lowestMarketPrice} prefix="₹" valueStyle={{ fontSize: 16 }} /></Col>
-                  </Row>
-
-                  <Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
-                    <SafetyOutlined /> {rec.reason}
-                  </Text>
-
-                  {rec.aiExplanation && (
-                    <Card size="small" style={{ background: '#f6f8ff', marginTop: 8 }}>
-                      <Space align="start">
-                        <RobotOutlined style={{ color: '#1677ff', fontSize: 16, marginTop: 4 }} />
-                        <div>
-                          <Text strong style={{ color: '#1677ff' }}>AI Analysis (Gemini)</Text>
-                          <Paragraph style={{ margin: '4px 0 0', fontSize: 13 }}>{rec.aiExplanation}</Paragraph>
-                        </div>
-                      </Space>
-                    </Card>
-                  )}
-                </Col>
-
-                <Col xs={24} md={8}>
-                  <Card size="small" style={{ marginBottom: 12 }}>
-                    <Row gutter={8}>
-                      <Col span={8}><Statistic title="Views" value={rec.viewsLast7Days} valueStyle={{ fontSize: 14 }} /></Col>
-                      <Col span={8}>
-                        <Statistic title="Orders" value={rec.ordersLast7Days}
-                          valueStyle={{ fontSize: 14, color: rec.ordersLast7Days === 0 ? '#ff4d4f' : undefined }} />
-                      </Col>
-                      <Col span={8}><Statistic title="Stock" value={rec.stockQuantity} valueStyle={{ fontSize: 14 }} /></Col>
-                    </Row>
-                  </Card>
-
-                  <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>
-                    Impact: <Text strong>{rec.expectedImpact}</Text>
-                  </Text>
-                  {rec.durationDays && (
-                    <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
-                      Duration: <Text strong>{rec.durationDays} days</Text>
-                    </Text>
-                  )}
-
-                  {rec.status === 'PENDING' && (
-                    <Space style={{ marginTop: 8 }}>
-                      <Button
-                        type="primary" icon={<CheckOutlined />}
-                        onClick={() => setApproveModal(rec)}
-                        style={{ background: '#52c41a', borderColor: '#52c41a' }}
-                      >
-                        Approve
-                      </Button>
-                      <Button danger icon={<CloseOutlined />} onClick={() => setRejectModal(rec)}>
-                        Reject
-                      </Button>
-                    </Space>
-                  )}
-                </Col>
-              </Row>
-            </Card>
+      {/* ── Empty state ───────────────────────────────────── */}
+      {filtered.length === 0 && (
+        <Card style={{ borderRadius: 14, textAlign: 'center', padding: 40 }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>🤖</div>
+          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>
+            No recommendations found
           </div>
-        ))
+          <Text type="secondary">
+            {activeTab === 'ALL'
+              ? 'No AI recommendations yet. Click Generate New to create one.'
+              : `No ${activeTab.toLowerCase()} recommendations.`
+            }
+          </Text>
+        </Card>
       )}
 
-      {/* Approve Modal */}
+      {/* ── Recommendation cards ──────────────────────────── */}
+      {filtered.map(rec => (
+        <div key={rec.id} style={{ marginBottom: 16 }}>
+          <Card
+            style={{
+              borderRadius: 14,
+              border: rec.riskLevel === 'HIGH' ? '1px solid #fecaca'
+                : rec.riskLevel === 'MEDIUM' ? '1px solid #fde68a'
+                : '1px solid rgba(0,0,0,0.06)',
+              opacity: rec.status !== 'PENDING' ? 0.8 : 1,
+            }}
+            styles={{ body: { padding: 24 } }}
+          >
+            <Row gutter={[24, 16]}>
+
+              {/* ── Left — product info ─────────────────── */}
+              <Col xs={24} md={16}>
+
+                {/* Title row */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
+                  {rec.status === 'PENDING' && (
+                    <Checkbox
+                      checked={selectedIds.includes(rec.id)}
+                      onChange={() => toggleSelect(rec.id)}
+                    />
+                  )}
+                  <Text style={{ fontSize: 20 }}>
+                    {typeConfig[rec.recommendationType]?.icon}
+                  </Text>
+                  <Title level={5} style={{ margin: 0 }}>{rec.productName}</Title>
+                  <Tag color={platformColor[rec.platform] || 'default'}>
+                    {rec.platform}
+                  </Tag>
+                  <Tag color={typeConfig[rec.recommendationType]?.color}>
+                    {typeConfig[rec.recommendationType]?.label}
+                  </Tag>
+                  <Tag color={riskConfig[rec.riskLevel]?.color}>
+                    {riskConfig[rec.riskLevel]?.text}
+                  </Tag>
+                  {rec.status !== 'PENDING' && (
+                    <Tag color={rec.status === 'APPROVED' ? 'success' : 'error'}>
+                      {rec.status}
+                    </Tag>
+                  )}
+                </div>
+
+                {/* Price comparison */}
+                <div style={{
+                  display: 'flex', gap: 20, flexWrap: 'wrap',
+                  background: '#f8fafc', borderRadius: 10, padding: '12px 16px', marginBottom: 12,
+                }}>
+                  <div>
+                    <div style={{ fontSize: 11, color: '#888', marginBottom: 2 }}>Current</div>
+                    <div style={{ fontSize: 18, fontWeight: 700 }}>₹{rec.currentPrice}</div>
+                  </div>
+                  <div style={{ fontSize: 18, color: '#bbb', alignSelf: 'flex-end' }}>→</div>
+                  <div>
+                    <div style={{ fontSize: 11, color: '#888', marginBottom: 2 }}>Recommended</div>
+                    <div style={{
+                      fontSize: 18, fontWeight: 700,
+                      color: rec.recommendedPrice < rec.currentPrice ? '#10b981' : '#ef4444',
+                    }}>
+                      ₹{rec.recommendedPrice}
+                      {rec.discountPercent > 0 && <ArrowDownOutlined style={{ fontSize: 12, marginLeft: 4 }} />}
+                      {rec.discountPercent < 0 && <ArrowUpOutlined style={{ fontSize: 12, marginLeft: 4 }} />}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 11, color: '#888', marginBottom: 2 }}>Safe Price</div>
+                    <div style={{ fontSize: 18, fontWeight: 700, color: '#8b5cf6' }}>
+                      ₹{rec.minimumSafePrice}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 11, color: '#888', marginBottom: 2 }}>Market Low</div>
+                    <div style={{ fontSize: 18, fontWeight: 700 }}>₹{rec.lowestMarketPrice}</div>
+                  </div>
+                </div>
+
+                {/* Reason */}
+                <Text type="secondary" style={{ display: 'block', marginBottom: 10, fontSize: 13 }}>
+                  <SafetyOutlined style={{ marginRight: 4 }} />
+                  {rec.reason}
+                </Text>
+
+                {/* AI Explanation */}
+                {rec.aiExplanation && (
+                  <Card
+                    size="small"
+                    style={{ background: '#f0f4ff', border: '1px solid #c7d2fe', borderRadius: 10 }}
+                  >
+                    <Space align="start">
+                      <RobotOutlined style={{ color: '#6366f1', fontSize: 16, marginTop: 2 }} />
+                      <div>
+                        <Text strong style={{ color: '#6366f1', fontSize: 12 }}>
+                          AI Analysis (Gemini)
+                        </Text>
+                        <Paragraph style={{ margin: '4px 0 0', fontSize: 13, color: '#374151' }}>
+                          {rec.aiExplanation}
+                        </Paragraph>
+                      </div>
+                    </Space>
+                  </Card>
+                )}
+              </Col>
+
+              {/* ── Right — metrics + actions ───────────── */}
+              <Col xs={24} md={8}>
+
+                {/* Metrics */}
+                <Card
+                  size="small"
+                  style={{ borderRadius: 10, marginBottom: 12, background: '#fafafa' }}
+                >
+                  <Row gutter={8}>
+                    <Col span={8}>
+                      <Statistic
+                        title="Views"
+                        value={rec.viewsLast7Days}
+                        valueStyle={{ fontSize: 16, fontWeight: 700 }}
+                      />
+                    </Col>
+                    <Col span={8}>
+                      <Statistic
+                        title="Orders"
+                        value={rec.ordersLast7Days}
+                        valueStyle={{
+                          fontSize: 16, fontWeight: 700,
+                          color: rec.ordersLast7Days === 0 ? '#ef4444' : undefined,
+                        }}
+                      />
+                    </Col>
+                    <Col span={8}>
+                      <Statistic
+                        title="Stock"
+                        value={rec.stockQuantity}
+                        valueStyle={{ fontSize: 16, fontWeight: 700 }}
+                      />
+                    </Col>
+                  </Row>
+                </Card>
+
+                {/* Impact + Duration */}
+                <Text type="secondary" style={{ display: 'block', fontSize: 12, marginBottom: 4 }}>
+                  Impact: <Text strong style={{ fontSize: 12 }}>{rec.expectedImpact}</Text>
+                </Text>
+                {rec.durationDays && (
+                  <Text type="secondary" style={{ display: 'block', fontSize: 12, marginBottom: 12 }}>
+                    Duration: <Text strong style={{ fontSize: 12 }}>{rec.durationDays} days</Text>
+                  </Text>
+                )}
+
+                {/* Action buttons */}
+                {rec.status === 'PENDING' && (
+                  <Space direction="vertical" style={{ width: '100%', marginTop: 8 }}>
+                    <Button
+                      type="primary"
+                      icon={<CheckOutlined />}
+                      block
+                      onClick={() => setApproveModal(rec)}
+                      style={{
+                        background: '#10b981', borderColor: '#10b981',
+                        borderRadius: 8, height: 40, fontWeight: 600,
+                      }}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      danger
+                      icon={<CloseOutlined />}
+                      block
+                      onClick={() => setRejectModal(rec)}
+                      style={{ borderRadius: 8, height: 40, fontWeight: 600 }}
+                    >
+                      Reject
+                    </Button>
+                  </Space>
+                )}
+
+                {rec.status !== 'PENDING' && (
+                  <Tag
+                    color={rec.status === 'APPROVED' ? 'success' : 'error'}
+                    style={{ borderRadius: 6, padding: '4px 12px', fontSize: 13, marginTop: 8 }}
+                  >
+                    {rec.status}
+                  </Tag>
+                )}
+              </Col>
+            </Row>
+          </Card>
+        </div>
+      ))}
+
+      {/* ── Approve Modal ──────────────────────────────────── */}
       <Modal
-        title="Approve Recommendation"
+        title={
+          <Space>
+            <CheckOutlined style={{ color: '#10b981' }} />
+            <span style={{ fontWeight: 700 }}>Approve Recommendation</span>
+          </Space>
+        }
         open={!!approveModal}
         onOk={() => handleApprove(approveModal?.id)}
         onCancel={() => { setApproveModal(null); setComments(''); }}
-        okText="Confirm Approval"
-        okButtonProps={{ style: { background: '#52c41a', borderColor: '#52c41a' } }}
+        okText="Yes, Approve"
+        okButtonProps={{
+          style: { background: '#10b981', borderColor: '#10b981', borderRadius: 8 },
+        }}
+        cancelButtonProps={{ style: { borderRadius: 8 } }}
+        width={480}
       >
-        <Paragraph>
-          Approve price change for <Text strong>{approveModal?.productName}</Text> from{' '}
-          <Text strong>₹{approveModal?.currentPrice}</Text> →{' '}
-          <Text strong style={{ color: '#52c41a' }}>₹{approveModal?.recommendedPrice}</Text>?
-        </Paragraph>
-        <TextArea
-          placeholder="Optional comments..."
-          value={comments}
-          onChange={(e) => setComments(e.target.value)}
-          rows={3} style={{ marginTop: 8 }}
-        />
+        <div style={{ padding: '8px 0' }}>
+          <div style={{
+            background: '#f0fdf4', border: '1px solid #bbf7d0',
+            borderRadius: 10, padding: '14px 16px', marginBottom: 16,
+          }}>
+            <div style={{ fontSize: 13, color: '#888', marginBottom: 4 }}>
+              Price change for
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 10 }}>
+              {approveModal?.productName}
+            </div>
+            <div style={{ display: 'flex', gap: 20 }}>
+              <div>
+                <div style={{ fontSize: 11, color: '#888' }}>Current</div>
+                <div style={{ fontSize: 20, fontWeight: 800 }}>₹{approveModal?.currentPrice}</div>
+              </div>
+              <div style={{ fontSize: 20, color: '#bbb', alignSelf: 'flex-end' }}>→</div>
+              <div>
+                <div style={{ fontSize: 11, color: '#888' }}>Recommended</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: '#10b981' }}>
+                  ₹{approveModal?.recommendedPrice}
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: '#888' }}>Safe Price</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: '#8b5cf6' }}>
+                  ₹{approveModal?.minimumSafePrice}
+                </div>
+              </div>
+            </div>
+          </div>
+          <TextArea
+            placeholder="Optional comments..."
+            value={comments}
+            onChange={(e) => setComments(e.target.value)}
+            rows={3}
+            style={{ borderRadius: 8 }}
+          />
+        </div>
       </Modal>
 
-      {/* Reject Modal */}
+      {/* ── Reject Modal ───────────────────────────────────── */}
       <Modal
-        title="Reject Recommendation"
+        title={
+          <Space>
+            <CloseOutlined style={{ color: '#ef4444' }} />
+            <span style={{ fontWeight: 700 }}>Reject Recommendation</span>
+          </Space>
+        }
         open={!!rejectModal}
         onOk={() => handleReject(rejectModal?.id)}
         onCancel={() => { setRejectModal(null); setComments(''); }}
-        okText="Confirm Rejection"
-        okButtonProps={{ danger: true }}
+        okText="Yes, Reject"
+        okButtonProps={{ danger: true, style: { borderRadius: 8 } }}
+        cancelButtonProps={{ style: { borderRadius: 8 } }}
+        width={440}
       >
-        <Paragraph>
-          Reject recommendation for <Text strong>{rejectModal?.productName}</Text>?
-        </Paragraph>
-        <TextArea
-          placeholder="Reason for rejection..."
-          value={comments}
-          onChange={(e) => setComments(e.target.value)}
-          rows={3} style={{ marginTop: 8 }}
-        />
+        <div style={{ padding: '8px 0' }}>
+          <Paragraph>
+            Reject recommendation for{' '}
+            <Text strong>{rejectModal?.productName}</Text>?
+          </Paragraph>
+          <TextArea
+            placeholder="Reason for rejection (optional)..."
+            value={comments}
+            onChange={(e) => setComments(e.target.value)}
+            rows={3}
+            style={{ borderRadius: 8, marginTop: 8 }}
+          />
+        </div>
       </Modal>
+
     </div>
   );
 }
