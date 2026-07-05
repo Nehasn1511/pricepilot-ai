@@ -1,9 +1,10 @@
 package com.pricepilot.entity;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
 
 @Entity
 @Table(name = "recommendations")
@@ -18,16 +19,18 @@ public class Recommendation {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tenant_id", nullable = false)
-    private Tenant tenant;
+@JoinColumn(name = "tenant_id", nullable = false)
+@JsonIgnore
+private Tenant tenant;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "master_product_id", nullable = false)
-    private MasterProduct masterProduct;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "marketplace_product_id")
-    private MarketplaceProduct marketplaceProduct;
+   @ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "master_product_id", nullable = false)
+@JsonIgnore
+private MasterProduct masterProduct;
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "marketplace_product_id")
+@JsonIgnore
+private MarketplaceProduct marketplaceProduct;
 
     @Column(name = "recommendation_type", nullable = false)
     @Enumerated(EnumType.STRING)

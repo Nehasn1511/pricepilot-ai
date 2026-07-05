@@ -28,8 +28,15 @@ public class DashboardController {
         long totalListings = marketplaceProductRepo.countByTenantId(tenantId);
         long lowSaleProducts = marketplaceProductRepo.findLowSaleProducts(tenantId).size();
         long noSaleProducts = marketplaceProductRepo.findHighViewNoSaleProducts(tenantId).size();
-        long pendingApprovals = recommendationRepo.countByTenantIdAndStatus(tenantId, Recommendation.Status.PENDING);
-        long activeDiscounts = recommendationRepo.countByTenantIdAndStatus(tenantId, Recommendation.Status.APPLIED);
+        long pendingApprovals =
+        recommendationRepo.countByTenant_IdAndStatus(
+                tenantId,
+                Recommendation.Status.PENDING);
+
+long activeDiscounts =
+        recommendationRepo.countByTenant_IdAndStatus(
+                tenantId,
+                Recommendation.Status.APPLIED);
 
         Map<String, Object> stats = Map.of(
                 "totalProducts", totalProducts,
