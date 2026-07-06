@@ -1,5 +1,6 @@
 package com.pricepilot.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,6 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode(exclude = {"tenant", "listings"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class MasterProduct {
 
     @Id
@@ -59,7 +61,6 @@ public class MasterProduct {
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "masterProduct", cascade = CascadeType.ALL)
-    // NO @JsonIgnore here — listings must be returned in API response
     private List<MarketplaceProduct> listings;
 
     @PrePersist

@@ -23,6 +23,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+<<<<<<< HEAD
                                         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
     filterChain.doFilter(request, response);
     return;
@@ -66,5 +67,32 @@ if (authHeader != null && authHeader.startsWith("Bearer ")) {
 }
 
 filterChain.doFilter(request, response);
+=======
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+           if (jwtUtil.validateToken(token)) {
+
+    String email = jwtUtil.getEmailFromToken(token);
+    String role = jwtUtil.getRoleFromToken(token);
+
+    System.out.println("===== JWT FILTER =====");
+    System.out.println("Email : " + email);
+    System.out.println("Role  : " + role);
+
+    UsernamePasswordAuthenticationToken authToken =
+            new UsernamePasswordAuthenticationToken(
+                    email,
+                    null,
+                    List.of(new SimpleGrantedAuthority(role))
+            );
+
+    SecurityContextHolder.getContext().setAuthentication(authToken);
+
+    System.out.println("Authorities : " + authToken.getAuthorities());
+}
+        }
+        filterChain.doFilter(request, response);
+>>>>>>> 85c199df049f7d7f3b06824b017a3f1a8baa5229
     }
 }

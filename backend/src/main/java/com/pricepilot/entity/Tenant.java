@@ -1,5 +1,6 @@
 package com.pricepilot.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,6 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode(exclude = {"users"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Tenant {
 
     @Id
@@ -29,10 +31,10 @@ public class Tenant {
     private String status;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt;         // ← was missing, added here
+    private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL)
-    @JsonIgnore                              // ← fixes circular reference
+    @JsonIgnore
     private List<User> users;
 
     @PrePersist

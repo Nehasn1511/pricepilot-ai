@@ -1,5 +1,6 @@
 package com.pricepilot.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode(exclude = {"tenant", "masterProduct"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class MarketplaceProduct {
 
     @Id
@@ -21,12 +23,12 @@ public class MarketplaceProduct {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_id", nullable = false)
-    @JsonIgnore                              // ← fixes circular reference
+    @JsonIgnore
     private Tenant tenant;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "master_product_id", nullable = false)
-    @JsonIgnore                              // ← fixes circular reference
+    @JsonIgnore
     private MasterProduct masterProduct;
 
     @Column(nullable = false)
