@@ -14,6 +14,7 @@ import {
   ThunderboltOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import axiosClient from '../api/axiosClient';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -91,54 +92,49 @@ export default function Login() {
   const handleLogin = async (values) => {
     try {
       setLoginLoading(true);
-
-      const demoUser = {
+      const res = await axiosClient.post('/auth/login', {
+        email: values.email,
+        password: values.password,
+      });
+      const token = res.data?.token || res.data?.accessToken;
+      const user = res.data?.user || {
         email: values.email,
         name: values.email.split('@')[0],
         role: 'TENANT_ADMIN',
-        companyName: 'Demo Company',
       };
-
-      localStorage.setItem('token', 'demo-token');
-      localStorage.setItem('user', JSON.stringify(demoUser));
-
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
       notification.success({
         message: 'Welcome back',
-        description: `Logged in as ${demoUser.name || values.email}`,
+        description: `Logged in as ${user.name || values.email}`,
         placement: 'topRight',
       });
-
       navigate('/dashboard');
     } catch (err) {
-      message.error('Login failed. Please try again.');
+      const msg = err.response?.data?.message || err.response?.data?.error || 'Invalid email or password';
+      message.error(msg);
     } finally {
       setLoginLoading(false);
     }
   };
-
   const handleRegister = async (values) => {
     try {
       setRegLoading(true);
-
-      const demoUser = {
-        email: values.email,
+      await axiosClient.post('/auth/register', {
         name: values.name,
-        role: 'TENANT_ADMIN',
+        email: values.email,
+        password: values.password,
         companyName: values.companyName,
-      };
-
-      localStorage.setItem('token', 'demo-token');
-      localStorage.setItem('user', JSON.stringify(demoUser));
-
+      });
       notification.success({
         message: 'Registration successful',
-        description: 'Demo account created. Redirecting to dashboard.',
+        description: 'Please login with your new account.',
         placement: 'topRight',
       });
-
-      navigate('/dashboard');
+      regForm.resetFields();
     } catch (err) {
-      message.error('Registration failed. Please try again.');
+      const msg = err.response?.data?.message || err.response?.data?.error || 'Registration failed. Please try again.';
+      message.error(msg);
     } finally {
       setRegLoading(false);
     }
